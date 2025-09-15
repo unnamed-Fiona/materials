@@ -1,0 +1,7 @@
+16 16 16，nvcc，-O3&-O3，cuda默认数学库，openmpi，-np 2
+
+Final Summary=
+Final Summary::HPCG result is VALID with a GFLOP/s rating of=0.366568
+Final Summary::HPCG 2.4 rating for historical reasons is=0.368847
+Final Summary::Results are valid but execution time (sec) is=10.0563
+Final Summary::Official results execution time (sec) must be at least=1800

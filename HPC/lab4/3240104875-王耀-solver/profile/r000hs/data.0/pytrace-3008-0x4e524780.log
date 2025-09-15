@@ -1,0 +1,22 @@
+
+3008 : 0xbadc24e655af5 : 3 : logger_init :  LOG FILE OPENED (by collectunits.logger), level: 4
+3008 : 0xbadc24e7e26ba : 4 : pytrace_try_probe_python_functions :  Python version is detected as == 0x0
+3008 : 0xbadc24eafec1a : 4 : pytrace_try_probe_python_functions :  Python version is detected as == 0x0
+3008 : 0xbadc24eed7c27 : 4 : pytrace_try_probe_python_functions :  Python version is detected as == 0x0
+3008 : 0xbadc24f00da5c : 4 : pytrace_try_probe_python_functions :  Python version is detected as == 0x0
+3008 : 0xbadc24f6d6039 : 4 : pytrace_try_probe_python_functions :  Python version is detected as == 0x0
+3008 : 0xbadc2537f07eb : 4 : pytrace_try_probe_python_functions :  Python version is detected as == 0x0
+3008 : 0xbadc253cc6112 : 4 : pytrace_start_profiling :  [CALLED]
+3024 : 0xbadc256016393 : 4 : pytrace_start_profiling :  [CALLED]
+3024 : 0xbadc2564d62d9 : 4 : pytrace_stop_profiling :  [CALLED]
+3024 : 0xbadc25653af87 : 3 : logger_fini :  LOG FILE CLOSED (by collectunits.logger)
+3008 : 0xbadc24e655af5 : 3 : logger_init :  LOG FILE OPENED (by collectunits.logger), level: 4
+3008 : 0xbadc24e7e26ba : 4 : pytrace_try_probe_python_functions :  Python version is detected as == 0x0
+3008 : 0xbadc24eafec1a : 4 : pytrace_try_probe_python_functions :  Python version is detected as == 0x0
+3008 : 0xbadc24eed7c27 : 4 : pytrace_try_probe_python_functions :  Python version is detected as == 0x0
+3008 : 0xbadc24f00da5c : 4 : pytrace_try_probe_python_functions :  Python version is detected as == 0x0
+3008 : 0xbadc24f6d6039 : 4 : pytrace_try_probe_python_functions :  Python version is detected as == 0x0
+3008 : 0xbadc2537f07eb : 4 : pytrace_try_probe_python_functions :  Python version is detected as == 0x0
+3008 : 0xbadc253cc6112 : 4 : pytrace_start_profiling :  [CALLED]
+3008 : 0xbadd432dde777 : 4 : pytrace_stop_profiling :  [CALLED]
+3008 : 0xbadd432de12c3 : 3 : logger_fini :  LOG FILE CLOSED (by collectunits.logger)

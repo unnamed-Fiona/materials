@@ -1,0 +1,391 @@
+\documentclass[a4paper,12pt,scheme=plain]{ctexart}
+\usepackage[top=25truemm,bottom=25truemm,left=25truemm,right=25truemm]{geometry}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\hypersetup{
+    hidelinks,
+    colorlinks = true,
+    linkcolor = themered,
+    urlcolor = themeblue,
+}
+\usepackage{xeCJK}
+\usepackage{indentfirst} %用于首行缩进
+\setlength{\parindent}{2em} %2em代表首行缩进两个字符
+\usepackage{float}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{tikz}
+\usepackage{xparse}
+\usepackage{tabularx}
+\usepackage{multirow}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{listings}
+\input{color.tex}
+\input{code.tex}
+\def\eqref#1{(\textcolor{themered}{\ref{#1}})}
+\newcommand{\inlinecode}[1]{\colorbox{gray!10}{\lstinline|#1|}}
+\usepackage{tcolorbox}
+\usepackage{amsmath, amsfonts}
+\usepackage{amssymb}
+\newcommand*{\dd}{\mathrm{d}}
+\numberwithin{equation}{section} %公式按节内编号
+\usepackage{setspace}
+\usepackage{enumitem}
+\usepackage{epstopdf}
+\setCJKfamilyfont{fangsongGB}{仿宋_GB2312}
+\newcommand{\fangsongGB}{\CJKfamily{fangsongGB}} %使用仿宋GB_2312字体
+
+\begin{document}
+\input{cover.tex}
+
+\tableofcontents
+\newpage
+
+\songti
+
+\section[Winograd 卷积优化]{Winograd 卷积优化\hfill\textnormal{\small \color{gray}作者：黄致毅}}
+
+\subsection{性能分析}
+先来看没有做任何优化的原始版本的性能结果。可以看到，原本的 winograd 算法并不是总表现出良好的特性：有三分之一的参数组合对应的加速比在 0.3 左右，还有两组参数组合的性能低于 1 。除此之外，算法的加速效果也不使很理想，因为有五组的加速比的效果在 2 以下。
+
+关注加速比比较低的参数组合，可以发现这八个参数组合可以分成两类：\textbf{低输入通道数}（C）和\textbf{较高的输入通道数加比较小的空间尺寸}（H，W）。分成这两类的原因是在后面的优化中这两类分别表现出不同的优化结果。
+
+而关注性能优势的参数组合不难发现\textbf{中等通道数加中等空间尺寸}和\textbf{中高输入通道数加低空间尺寸}的时候效果不错。
+
+\begin{table}[h]
+    \renewcommand{\arraystretch}{1.25}
+    \centering
+    \caption{原始 Winograd 算法性能结果}
+    \begin{tabular}{|l|l|c|l|}
+    \hline
+            & \textbf{参数组合} (C, H, W, K, N)     & \textbf{加速比}  & \textbf{性能特征}       \\
+    \hline
+    Layer 0  & (3, 112, 112, 64, 64)    & 0.90 & \textcolor{red!60!white}{性能下降}   \\
+    Layer 1  & (32, 112, 112, 64, 64)   & 1.70 & 良好加速       \\
+    Layer 2  & (64, 112, 112, 64, 64)   & 1.59 & 良好加速       \\
+    Layer 3  & (64, 112, 112, 128, 64)  & 1.61 & 良好加速       \\
+    Layer 4  & (128, 112, 112, 128, 64) & 1.65 & 良好加速       \\
+    Layer 5  & (128, 50, 50, 128, 64)   & 0.30 & \textcolor{red}{严重性能下降} \\
+    Layer 6  & (256, 50, 50, 256, 64)   & 0.30 & \textcolor{red}{严重性能下降} \\
+    Layer 7  & (256, 50, 50, 512, 64)   & 0.30 & \textcolor{red}{严重性能下降} \\
+    Layer 8  & (512, 50, 50, 512, 64)   & 0.29 & \textcolor{red}{严重性能下降} \\
+    Layer 9  & (512, 16, 16, 2048, 64)  & 2.92 & \textcolor{green!60!black}{最佳性能}   \\
+    Layer 10 & (3, 100, 100, 32, 128)   & 0.82 & \textcolor{red!60!white}{性能下降}   \\
+    Layer 11 & (32, 100, 100, 64, 128)  & 1.53 & 良好加速       \\
+    Layer 12 & (64, 50, 50, 64, 128)    & 0.29 & \textcolor{red}{严重性能下降} \\
+    Layer 13 & (64, 50, 50, 128, 128)   & 0.29 & \textcolor{red}{严重性能下降} \\
+    Layer 14 & (128, 20, 26, 96, 128)   & 2.02 & 优秀加速       \\
+    Layer 15 & (96, 12, 12, 192, 128)   & 2.04 & 优秀加速       \\
+    Layer 16 & (192, 12, 12, 256, 128)  & 2.10 & 优秀加速       \\
+    Layer 17 & (192, 8, 8, 256, 128)    & 2.09 & 优秀加速       \\
+    \hline
+    \end{tabular}
+\end{table}
+
+利用 perf 进行性能分析结果，使用 \inlinecode{perf record} 指令进行数据收集，并使用 \inlinecode{perf report} 指令对数据结果进行可视化分析，报告如图 \ref{fig:perf1} 所示。
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.8\textwidth]{figs/perf1.png}
+\caption{原始 Winograd 代码的 perf 分析结果}
+\label{fig:perf1}
+\end{figure}
+
+可以看到在 winograd 代码中，耗时最长的是 \inlinecode{sgemm_parallel} 函数，这对应多个比较大的矩阵乘法，因此在函数设计的时候特意设计成并行模式，因此优化可以从这个函数入手。
+
+perf 提供了 \inlinecode{annotate} 指令使我们可以更深入函数对应的汇编代码进行跟深入的性能分析 (见图 \ref{fig:perf_annotate})。
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.8\textwidth]{figs/屏幕截图 2025-08-21 191727.png}
+\caption{perf annotate 分析结果}
+\label{fig:perf_annotate}
+\end{figure}
+
+可以看到 \inlinecode{ldr} 指令的开销占比极大，这是一个加载指令，这些加载指令的总开销远超过 50\% 。我们的代码正在从非连续的内存地址加载数据。也就是说在这个内存访问瓶颈场景中，代码的大量时间都花在了从内存加载数据上。
+
+使用 \inlinecode{perf stat} 指令 perf 还能帮助我们观察代码内存的相关使用情况，这是只对 \inlinecode{sgemm_parallel} 函数做优化后内存访问情况的分析。
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.8\textwidth]{figs/屏幕截图 2025-08-20 203535.png}
+\caption{\inlinecode{sgemm\_parallel} 函数的内存访问情况}
+\label{fig:sgemm_memory_access}
+\end{figure}
+
+从图 \ref{fig:sgemm_memory_access} 的数据中可以看出，\inlinecode{cache-misses} 和 \inlinecode{L1-dcache-load-misses} 的数量相当说明几乎所有的缓存未命中都发生在 L1 数据缓存这一块，这导致 CPU 会到速度更慢的内存区域寻找数据，从而导致一定的延迟，同时，此时缓存未命中率为 1.16\%，这在 HPC 中这算是一个比较高的数字，表示此时的内存访问模式并不是缓存友好的。
+
+\subsection{手写向量化展开}
+
+手写向量化展开的想法来自于这个博客\footnote{\url{https://blog.csdn.net/hsqyc/article/details/116136385}}。简单来说，既然 winograd 算法的核心将昂贵的乘法展开成廉价的加法操作，因此不如做彻底的加法展开，而且刚好用于计算的卷积核尺寸比较小，也方便我们做结果展开。
+
+最开始只是做简单的展开而没有使用向量化操作，但是从结果来看，单纯简单的手写展开没有太多性能上的提升，甚至可以说没有提升。因此需要使用neon指令集来对手写展开做进一步的向量化优化。
+
+展开操作简单概括为：我们利用加载指令将输入矩阵输入载入 NEON 寄存器中，然后直接利用这些数据实现第一个阶段矩阵运算，这个对应左乘矩阵操作。但是我们后续的右乘矩阵操作需要基于列向量进行，因此我们需要将行向量重新转置成列向量，然后利用这些列向量进行第二阶段的矩阵运算，得到最终数据，此时我们的数据以列向量形式呈现，因此需要再次转置成行向量，然后再写回内存中。
+
+一共做了三种手写向量化展开操作，分别对应 $G*g*G^T$ ，$B^T*d*B$ 和 $A^T*m*A$ 这三个比较小的变换方法。不过这三种向量化操作所带来的性能提升比较小，仅作优化尝试。
+
+\subsection{OpenBLAS 的使用}
+
+正如性能分析所讲，\inlinecode{sgemm_parallel} 进行的是一个比较大的矩阵乘法操作，这个函数所采用的朴素的三层循环结构的效率极低，尽管在原代码中利用了 OpenMP 方法进行加速，但可惜的是效果并不是很理想。
+
+所以既然我们可以使用矩阵乘法的数学库来优化我们的代码，那么我们就直接使用 OpenBLAS 中的 \inlinecode{cblas_sgemm} 操作来优化我们的矩阵乘法，效果十分显著：
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.8\textwidth]{figs/屏幕截图 2025-08-20 101808.png}
+\caption{使用 OpenBLAS 优化后的性能结果}
+\label{fig:openblas}
+\end{figure}
+
+\subsection{Tile 的使用}
+针对原本代码的缓存情况，利用 Tile 进行优化。
+
+我们只对两个部分做 Tile 的划分。在开始的时候，我们对 \inlinecode{x}, \inlinecode{y}, \inlinecode{k} 这三个区域都做了分块处理，但是结果是加速比显著下降，这可能是因为我们将 \inlinecode{k} 已到了内存循环中，但是由于数据排布等问题，对应的地址偏移量过大，导致内存访问不连续，从而降低了原本的效率。因此我们简化了原本的分块策略，改用只对 \inlinecode{x}, \inlinecode{y} 这两个区域进行分块。从小尺寸出发，发现加速比随分块的增大而逐渐增大，但对总体加速比影响不大。
+
+\subsection{可改进的方向}
+囿于时间和能力，我们只做了如上的优化处理，但是仍有更多可以进行优化的地方。
+
+首先正如前面的加速比表现不好的分类，经过处理后发现第二种类别随着我们优化方法的使用从而得到了质的飞跃，但是第一种类别的表现尽管有些许提升，但总体表现并不是很理想，也就是说，我们所研究的优化方法对小通道数据并不是很有效果。这可能是因为我们算法的优势是用廉价的加法换取昂贵的乘法，但是当 \inlinecode{C} 比较小，所需要的计算量并不是很大，从而导致乘法阶段的优势不明显，而与此同时我们舍弃乘法时所使用的技巧又成了我们性能上的一个瓶颈。
+
+工业上的处理方法是针对不同的 \inlinecode{C} 值选择最合适的卷积方法，如直接计算或者是利用 Im2col 方法来加速我们的卷积操作，但是这是针对卷积算法而非 winograd 算法，或者说这本身也许就是 winograd 算法的一个劣势。
+
+另一个方法时对内存的处理，想法来自这篇文章\footnote{\url{https://zhuanlan.zhihu.com/p/72149270}}，也就是利用大量的内存重排改变我们原有的数据布局从而加速我们的算法，这其实在 lab2 中有所涉及，我们利用内存重排来调整我们原有的数据布局使其更适合于 SIMD 方法的使用。包括从上面的 Tile 方法的尝试可以看出，算法的内存布局并不是很友好的，如果能够重新调整数据布局，那么就可以进一步加速我们原有的算法，引入更多可能带来一定提升的代码。
+
+\section{HPCG 基准测试优化}
+
+\subsection[HPCG for Arm]{HPCG for Arm\hfill\textnormal{\small \color{gray}作者：林柯成}}
+
+本实验对HPCG基准测试进行了多种优化尝试，包括：
+
+\begin{enumerate}
+\item 官方给的模板直接跑(原始性能)
+\item 规模改小 \inlinecode{./xhpcg --nx=64 --ny=64 --nz=64 --rt=10}
+\item GCC优化版本
+\item Clang优化版本
+\item BLIS数据库优化
+\item OpenMPI并行
+\end{enumerate}
+
+\begin{table}[h]
+    \renewcommand{\arraystretch}{1.5}
+    \centering
+    \caption{不同配置下的HPCG性能对比}
+    \resizebox{\textwidth}{!}{
+        \begin{tabular}{|l|c|c|c|c|c|}
+        \hline
+        \textbf{配置} & \textbf{性能}(GFLOP/s) & \textbf{内存带宽}(GB/s) & \textbf{执行时间}(s) & \textbf{问题规模} & \textbf{优化效果} \\
+        \hline
+        官方模板 & 1.57 & 11.93 & 65.5 & 大(103B ops) & 基准 \\
+        \hline
+        规模缩小 & 1.57 & 11.91 & 12.1 & 小(19B ops) & 无变化 \\
+        \hline
+        GCC优化 & 0.79 & 6.01 & 78.2 & 中(62B ops) & -50\% \\
+        \hline
+        Clang优化 & 0.73 & 5.52 & 85.1 & 中(62B ops) & \textcolor{red}{-54\%} \\
+        \hline
+        BLIS数学库 & 0.79 & 6.02 & 78.2 & 中(62B ops) & -50\% \\
+        \hline
+        OpenMPI并行 & 1.74 & 13.20 & 70.0 & 大(124B ops) & \textcolor{green!60!black}{+11\%} \\
+        \hline
+        \end{tabular}
+    }
+\end{table}
+
+\subsubsection{主要发现}
+
+\begin{enumerate}
+    \item 编译器优化适得其反
+    
+    GCC/Clang激进优化都导致性能下降50\%+。
+    
+    原因：过度优化破坏了内存访问模式，HPCG对内存带宽较为敏感。
+
+    \item 问题规模影响
+    \begin{itemize}
+        \item 小规模: 1.57 GFLOP/s - 缓存友好
+        \item 中规模: 0.79 GFLOP/s - 缓存不友好  
+        \item 大规模: 1.74 GFLOP/s - 并行补偿
+    \end{itemize}
+
+    \item MPI并行有效
+    唯一提升性能的优化方法：
+    \begin{itemize}
+        \item 内存带宽: 11.93 $\rightarrow$ 13.20 GB/s (+11\%)
+        \item 总体性能提升11\%
+    \end{itemize}
+
+\end{enumerate}
+
+
+\subsubsection{各组件详细性能分析}
+
+\begin{table}[h]
+    \renewcommand{\arraystretch}{1.5}
+    \centering
+    \caption{HPCG各组件详细性能对比 (GFLOP/s)}
+    \begin{tabular}{|l|c|c|c|}
+    \hline
+    \textbf{配置} & \textbf{DDOT} & \textbf{SpMV} & \textbf{MG} \\
+    \hline
+    官方模板 & 1.34 & \textcolor{green!60!black}{1.83 (最佳)} & 1.54 \\
+    \hline
+    规模缩小 & 1.35 (基本相同) & 1.80 & 1.54 \\
+    \hline
+    GCC优化 & 2.53 (+88\%) & 1.09 (-40\%) & 0.74 (-52\%) \\
+    \hline
+    Clang优化 & \textcolor{green!60!black}{2.81 (+109\%)} & 1.10 (-40\%) & 0.67 (-57\%) \\
+    \hline
+    BLIS优化 & 2.54 (+89\%) & 1.09 (-40\%) & 0.74 (-52\%) \\
+    \hline
+    OpenMPI & 2.08 (+55\%) & 1.68 (-8\%) & \textcolor{green!60!black}{1.78 (+16\%)} \\
+    \hline
+    \end{tabular}
+\end{table}
+
+从表格可以看出：
+
+\begin{itemize}
+    \item \textbf{DDOT 操作}：所有优化方法都显著提升了性能，其中 Clang 优化效果最佳，提升109\%
+    \item \textbf{SpMV 操作}：除 OpenMPI 外，其他优化方法都导致性能下降，官方模板表现最佳
+    \item \textbf{MG 操作}：只有 OpenMPI 带来性能提升(+16\%)，其他优化方法都显著降低性能
+\end{itemize}
+
+这进一步证实了编译器激进优化对内存密集型操作（SpMV、MG）的负面影响，而对计算密集型操作（DDOT）有正面作用。
+
+\subsection[HPCG for NVIDIA GPU]{HPCG for NVIDIA GPU\hfill\textnormal{\small \color{gray}作者：王耀}}
+
+首先下载GitHub上的nvidia-hpcg仓库：
+
+\begin{lstlisting}[style=bash]
+git clone https://github.com/NVIDIA/nvidia-hpcg
+\end{lstlisting}
+
+\subsubsection{修改\texttt{build\_sample.sh}}
+
+修改 \inlinecode{MPI_PATH}、\inlinecode{CUDA_PATH}、\inlinecode{MATHLIBS_PATH}、\inlinecode{NCCL_PATH}、\inlinecode{NVPL_SPARSE_PATH} 这几个环境变量。但是其实因为集群自带了cuda toolkits，所以只要写一个 \inlinecode{CUDA_PATH}，之后它的 \inlinecode{include} 和 \inlinecode{lib64} 文件夹内就有include库和动态链接文件了。这里由于我最开始认为集群没有nccl，所以nccl是spack下载的，所以我不确定nccl是否也在上述cuda toolkits中。
+
+由于我们的V100集群是 \inlinecode{x86+sm70} 的，所以 \inlinecode{USE_GRACE} 置0，其他选项都保留1即可。
+
+\subsubsection{修改\texttt{Make.CUDA\_X86}}
+
+由于我们的机器是 \inlinecode{sm70} 的，而这个nvidia-hpcg默认是为80 90 100三个架构的机器构建代码，所以我们要把其中一个改为70，将 \inlinecode{sm_80} 和 \inlinecode{compute_80} 中的80改为70即可。
+
+\subsubsection{修改\texttt{run\_sample.sh}}
+
+这里同样要将动态库文件路径放上来，否则运行会报错找不到动态库文件。
+
+这里 \inlinecode{run_sample.sh} 给出了两种架构上运行的代码，只有第一个 \inlinecode{mpirun} 是 \inlinecode{x86} 架构的，其他都是 \inlinecode{aarch64}，也就是arm架构的，不再测试，所以都注释掉吧。
+
+\subsubsection{运行代码}
+
+这里我尝试过 \inlinecode{sbatch}，但是发现V100最多只给申请1个节点两块卡，所以我就直接 \inlinecode{salloc} 了。
+
+\begin{lstlisting}[style=bash]
+salloc --gpus=2 -p V100
+\end{lstlisting}
+
+然后就可以调整 \inlinecode{run_sample.sh} 中的 \inlinecode{-np} 参数了。只要加个权限，就可以直接运行了：
+
+\begin{lstlisting}[style=bash]
+chmod +x ./build_sample.sh
+chmod +x ./run_sample.sh
+./run_sample.sh
+\end{lstlisting}
+
+\subsubsection{其他修改}
+
+如果要使用clang编译 \inlinecode{.cu} 文件，则在 \inlinecode{Make.CUDA_X86} 文件里要把 \inlinecode{CXX} 和 \inlinecode{CXXFLAGS} 替换为：
+
+\begin{lstlisting}[style=bash]
+CXX = clang++
+CXXFLAGS = $(HPCG_DEFS) -std=c++17 -O3 -fopenmp -march=$(CPU_ARCH) -mtune=$(CPU_ARCH) -fvectorize -funroll-loops -DTHRUST_PROVIDE_LEGACY_ARCH_MACROS=1 -lcudart
+\end{lstlisting}
+
+需要加一个 \inlinecode{-lcudart}，因为clang默认不编译 \inlinecode{cudaMemcpy} 这一类函数，会报错没有这个函数，这个标签可以让clang去寻找链接这几个函数的库。
+
+但是比较意外的是，和网络上说的clang会带来提速不一样，我用clang编译反而计算性能下降了（Gflops下降了约40\%）。
+
+值得一提的是，输入参数可以直接通过 \inlinecode{-nx} \inlinecode{-ny} \inlinecode{-nz} 指定，\inlinecode{hpcg.sh} 脚本会接受这几个参数然后作为指定问题规模，否则会读取 \inlinecode{./bin/sample-dat/hpcg.dat} 中的数据文件。
+
+其他的修改只要在 \inlinecode{Make.CUDA_X86} 中直接修改即可。
+
+\subsubsection{测试结果}
+
+在配置基本完成后，开始针对提示进行修改尝试。
+
+HPCG输入文件在这里可以用 \inlinecode{hpcg.sh} 脚本的参数传递来替代，整体上来讲是问题规模越大运算能力越强，但是当问题规模出现 \inlinecode{203 203 203} 这类奇数甚至质数时性能下降比较严重（不用 \inlinecode{SPARSE} 编译的文件运行结果对比来看，97和264，在第一次采用稀疏矩阵库编译后会有分块奇偶检测）。
+
+网络上有帖子说使用clang代替 \inlinecode{nvcc} 编译可以获取更好的性能，但是使用clang之后计算性能反而下降了40\%左右，GFLOP/S为158.087。
+
+原编译选项是 \inlinecode{-O3} + \inlinecode{-Ofast}，GPU部分已经最优，CPU部分经过修改调试，影响不大。
+
+至于不同的数学库，由于官方文档强调CUDA内的稀疏矩阵数学运算库是性能很关键的一环，而且GPU代码似乎也只有CUDA一家提供的数学库符合源代码里面调用的接口，所以这部分最后我没有做。
+
+更换MPI时，更换其他的MPI都会出现 \inlinecode{ompi_mpi_} 开头的名称找不到链接库的问题，似乎源代码使用了OpenMPI特有的接口和变量，我不打算去修改源代码，所以这部分没能完成。
+
+调整核心数和进程数。经过反复调整 \inlinecode{-np 2} 时效果最好，因为 \inlinecode{sbatch} 最多1个节点两块卡，选择进程多了反而会计算性能下降，可能是出现了抢SM的现象。进程过多会直接出现超出内存限制的情况。即使是保持进程总占用内存不变，也是 \inlinecode{-np 2} 最快。\inlinecode{-np 3} 和 \inlinecode{-np 4} 速度都比较慢。
+
+\subparagraph{测试结果详细数据}
+
+\begin{table}[h]
+    \renewcommand{\arraystretch}{1.5}
+    \centering
+    \caption{HPCG问题规模详细性能对比 (GFLOP/s)}
+    \begin{tabular}{|c|c|}
+    \hline
+    \textbf{规模} & \textbf{GFLOP/S} \\
+    \hline
+    256*256*256 & 268.367 \\
+    \hline
+    16*16*16 & 2.474 \\
+    \hline
+    128*128*128 & 236.219 \\
+    \hline
+    203*203*203 & 64.717 \\
+    \hline
+    \end{tabular}
+\end{table}
+
+\begin{table}[h]
+    \renewcommand{\arraystretch}{1.5}
+    \centering
+    \caption{HPCG进程数详细性能对比 (GFLOP/s)}
+    \begin{tabular}{|c|c|}
+    \hline
+    \textbf{进程数（规模）} & \textbf{GFLOP/S} \\
+    \hline
+    2(256*256*256) & 268.367 \\
+    \hline
+    4(256*256*256) & 107.445 \\
+    \hline
+    4(256*256*128) & 200.48 \\
+    \hline
+    1(256*256*256) & 138.041 \\
+    \hline
+    3(256*256*256) & 161.802 \\
+    \hline
+    \end{tabular}
+\end{table}
+
+\begin{table}[h]
+    \renewcommand{\arraystretch}{1.5}
+    \centering
+    \caption{编译选项 (GFLOP/s)}
+    \begin{tabular}{|c|c|}
+    \hline
+    \textbf{编译选项} & \textbf{GFLOP/S} \\
+    \hline
+    -O3&-Ofast & 268.367 \\
+    \hline
+    -O3&-O2 & 267.175 \\
+    \hline
+    -O3&-O3 & 267.233 \\
+    \hline
+    -O2&-Ofast & 267.396 \\
+    \hline
+    \end{tabular}
+\end{table}
+
+\end{document}

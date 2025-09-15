@@ -1,0 +1,50 @@
+
+2942 : 0xbadc22d94f1c5 : 3 : logger_init :  LOG FILE OPENED (by collectunits.logger), level: 4
+2942 : 0xbadc22d976e51 : 4 : pytrace_try_probe_python_functions :  Python version is detected as == 0x0
+2942 : 0xbadc22dc9b925 : 4 : pytrace_try_probe_python_functions :  Python version is detected as == 0x0
+2942 : 0xbadc231efb2c3 : 4 : pytrace_try_probe_python_functions :  Python version is detected as == 0x0
+2942 : 0xbadc2323b8b1b : 4 : pytrace_start_profiling :  [CALLED]
+2965 : 0xbadc232ae308a : 4 : pytrace_start_profiling :  [CALLED]
+2965 : 0xbadc232cd0e4a : 4 : pytrace_stop_profiling :  [CALLED]
+2965 : 0xbadc232cd38ef : 3 : logger_fini :  LOG FILE CLOSED (by collectunits.logger)
+2942 : 0xbadc22d94f1c5 : 3 : logger_init :  LOG FILE OPENED (by collectunits.logger), level: 4
+2942 : 0xbadc22d976e51 : 4 : pytrace_try_probe_python_functions :  Python version is detected as == 0x0
+2942 : 0xbadc22dc9b925 : 4 : pytrace_try_probe_python_functions :  Python version is detected as == 0x0
+2942 : 0xbadc231efb2c3 : 4 : pytrace_try_probe_python_functions :  Python version is detected as == 0x0
+2942 : 0xbadc2323b8b1b : 4 : pytrace_start_profiling :  [CALLED]
+2978 : 0xbadc23a9e2a62 : 4 : pytrace_start_profiling :  [CALLED]
+2983 : 0xbadc23b4276a9 : 4 : pytrace_start_profiling :  [CALLED]
+2983 : 0xbadc23b671e39 : 4 : pytrace_stop_profiling :  [CALLED]
+2983 : 0xbadc23b6746e9 : 3 : logger_fini :  LOG FILE CLOSED (by collectunits.logger)
+2942 : 0xbadc22d94f1c5 : 3 : logger_init :  LOG FILE OPENED (by collectunits.logger), level: 4
+2942 : 0xbadc22d976e51 : 4 : pytrace_try_probe_python_functions :  Python version is detected as == 0x0
+2942 : 0xbadc22dc9b925 : 4 : pytrace_try_probe_python_functions :  Python version is detected as == 0x0
+2942 : 0xbadc231efb2c3 : 4 : pytrace_try_probe_python_functions :  Python version is detected as == 0x0
+2942 : 0xbadc2323b8b1b : 4 : pytrace_start_profiling :  [CALLED]
+2978 : 0xbadc23a9e2a62 : 4 : pytrace_start_profiling :  [CALLED]
+2986 : 0xbadc23b4c4c85 : 4 : pytrace_start_profiling :  [CALLED]
+2986 : 0xbadc23b70457f : 4 : pytrace_stop_profiling :  [CALLED]
+2986 : 0xbadc23b706940 : 3 : logger_fini :  LOG FILE CLOSED (by collectunits.logger)
+2942 : 0xbadc22d94f1c5 : 3 : logger_init :  LOG FILE OPENED (by collectunits.logger), level: 4
+2942 : 0xbadc22d976e51 : 4 : pytrace_try_probe_python_functions :  Python version is detected as == 0x0
+2942 : 0xbadc22dc9b925 : 4 : pytrace_try_probe_python_functions :  Python version is detected as == 0x0
+2942 : 0xbadc231efb2c3 : 4 : pytrace_try_probe_python_functions :  Python version is detected as == 0x0
+2942 : 0xbadc2323b8b1b : 4 : pytrace_start_profiling :  [CALLED]
+2978 : 0xbadc23a9e2a62 : 4 : pytrace_start_profiling :  [CALLED]
+2978 : 0xbadc247704d6a : 4 : pytrace_stop_profiling :  [CALLED]
+2978 : 0xbadc247707b0d : 3 : logger_fini :  LOG FILE CLOSED (by collectunits.logger)
+2942 : 0xbadc22d94f1c5 : 3 : logger_init :  LOG FILE OPENED (by collectunits.logger), level: 4
+2942 : 0xbadc22d976e51 : 4 : pytrace_try_probe_python_functions :  Python version is detected as == 0x0
+2942 : 0xbadc22dc9b925 : 4 : pytrace_try_probe_python_functions :  Python version is detected as == 0x0
+2942 : 0xbadc231efb2c3 : 4 : pytrace_try_probe_python_functions :  Python version is detected as == 0x0
+2942 : 0xbadc2323b8b1b : 4 : pytrace_start_profiling :  [CALLED]
+3008 : 0xbadc248160ac4 : 4 : pytrace_start_profiling :  [CALLED]
+3008 : 0xbadc248335e18 : 4 : pytrace_stop_profiling :  [CALLED]
+3008 : 0xbadc248338734 : 3 : logger_fini :  LOG FILE CLOSED (by collectunits.logger)
+2942 : 0xbadc22d94f1c5 : 3 : logger_init :  LOG FILE OPENED (by collectunits.logger), level: 4
+2942 : 0xbadc22d976e51 : 4 : pytrace_try_probe_python_functions :  Python version is detected as == 0x0
+2942 : 0xbadc22dc9b925 : 4 : pytrace_try_probe_python_functions :  Python version is detected as == 0x0
+2942 : 0xbadc231efb2c3 : 4 : pytrace_try_probe_python_functions :  Python version is detected as == 0x0
+2942 : 0xbadc2323b8b1b : 4 : pytrace_start_profiling :  [CALLED]
+2942 : 0xbadd433272828 : 4 : pytrace_stop_profiling :  [CALLED]
+2942 : 0xbadd433275541 : 3 : logger_fini :  LOG FILE CLOSED (by collectunits.logger)

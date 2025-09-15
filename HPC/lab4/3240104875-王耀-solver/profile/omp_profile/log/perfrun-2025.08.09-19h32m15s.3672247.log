@@ -1,0 +1,36 @@
+14 [4132271872] INFO perfrun.launcher <> - Launcher main begin
+19 [4132271872] INFO perfrun.launcher <> - MessageCatalogInit finished
+19 [4132271872] INFO perfrun.launcher <> - Launcher instance created
+19 [4132271872] INFO perfrun.launcher <> - argc = 6; cmdline = /home/hpc101/h3240104875/spack/opt/spack/linux-icelake/intel-oneapi-vtune-2025.4.0-bc6gl67prg2mkvzwgkv3jsbm5q5hatdd/vtune/2025.4/bin32/amplxe-runss -dump-vdso -r /home/hpc101/h3240104875/test/HPC101/src/lab4/r000hs --tmp-dir /home/hpc101/h3240104875/tmp/amplxe-tmp-h3240104875 
+40 [4132271872] INFO perfrun.launcher <> - create msngr2::ICliToolContext
+40 [4132271872] INFO perfrun.launcher <> - create file finder object
+58 [4131740480] INFO perfrun.launcher <> - plugin [remoteplug] was disabled because it doesn't support the given collection type.
+58 [4131740480] INFO perfrun.launcher <> - plugin [] was disabled because it doesn't support the given collection type.
+58 [4131740480] INFO perfrun.vdso <> - dumping [vdso] pseudomodule
+61 [4131740480] INFO perfrun.launcher <> - plugin [] was disabled because it doesn't support the given collection type.
+61 [4131740480] INFO perfrun.launcher <> - plugin [] was disabled because it doesn't support the given collection type.
+61 [4131740480] INFO perfrun.launcher <> - plugin [] was disabled because it doesn't support the given collection type.
+61 [4131740480] INFO perfrun.launcher <> - plugin [] was disabled because it doesn't support the given collection type.
+62 [4131740480] INFO perfrun.launcher <> - plugin [] was disabled because it doesn't support the given collection type.
+62 [4131740480] INFO perfrun.launcher <> - plugin [] was disabled because it doesn't support the given collection type.
+62 [4131740480] INFO perfrun.launcher <> - plugin [] was disabled because it doesn't support the given collection type.
+62 [4131740480] INFO perfrun.launcher <> - plugin [] was disabled because it doesn't support the given collection type.
+62 [4131740480] INFO perfrun.launcher <> - plugin [] was disabled because it doesn't support the given collection type.
+62 [4131740480] INFO perfrun.launcher <> - plugin [] was disabled because it doesn't support the given collection type.
+62 [4131740480] INFO perfrun.launcher <> - plugin [] was disabled because it doesn't support the given collection type.
+62 [4131740480] INFO perfrun.launcher <> - plugin [] was disabled because it doesn't support the given collection type.
+62 [4131740480] INFO perfrun.launcher <> - plugin [] was disabled because it doesn't support the given collection type.
+62 [4131740480] INFO perfrun.launcher <> - plugin [] was disabled because it doesn't support the given collection type.
+62 [4131740480] INFO perfrun.launcher <> - plugin [] was disabled because it doesn't support the given collection type.
+62 [4131740480] INFO perfrun.launcher <> - plugin [] was disabled because it doesn't support the given collection type.
+62 [4131740480] INFO perfrun.launcher <> - plugin [] was disabled because it doesn't support the given collection type.
+62 [4131740480] INFO perfrun.launcher <> - plugin [] was disabled because it doesn't support the given collection type.
+62 [4131740480] INFO perfrun.launcher <> - plugin [] was disabled because it doesn't support the given collection type.
+62 [4131740480] INFO perfrun.launcher <> - plugin [] was disabled because it doesn't support the given collection type.
+62 [4131740480] INFO perfrun.launcher <> - plugin [] was disabled because it doesn't support the given collection type.
+62 [4131740480] INFO perfrun.launcher <> - plugin [] was disabled because it doesn't support the given collection type.
+62 [4131740480] INFO perfrun.launcher <> - plugin [] was disabled because it doesn't support the given collection type.
+62 [4131740480] INFO perfrun.launcher <> - plugin [] was disabled because it doesn't support the given collection type.
+62 [4131740480] INFO perfrun.launcher <> - plugin [] was disabled because it doesn't support the given collection type.
+62 [4132271872] INFO perfrun.launcher <> - Application exit code: 0
+62 [4132271872] INFO perfrun.launcher <> - Exit code: 0

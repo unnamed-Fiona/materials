@@ -1,0 +1,29 @@
+TOPdir       = .
+SRCdir       = $(TOPdir)/src
+INCdir       = $(TOPdir)/src
+BINdir       = $(TOPdir)/bin
+
+MPdir        =
+MPinc        =
+MPlib        =
+
+HPCG_INCLUDES = -I$(INCdir) -I$(INCdir)/$(arch) $(MPinc)
+HPCG_LIBS     =
+
+HPCG_OPTS = -DHPCG_NO_MPI -DHPCG_NO_OPENMP -DHPCG_CONTIGUOUS_ARRAYS
+
+HPCG_DEFS     = $(HPCG_OPTS) $(HPCG_INCLUDES)
+
+CXX          = /usr/bin/g++
+
+CXXFLAGS     = $(HPCG_DEFS) -O3 -march=native -mtune=native -mavx2 -mfma \
+               -ffast-math -funroll-loops -fprefetch-loop-arrays \
+               -flto -fomit-frame-pointer -fopenmp \
+               -W -Wall -Wno-unused-parameter
+
+LINKER       = $(CXX)
+LINKFLAGS    = $(CXXFLAGS)
+
+ARCHIVER     = ar
+ARFLAGS      = r
+RANLIB       = echo

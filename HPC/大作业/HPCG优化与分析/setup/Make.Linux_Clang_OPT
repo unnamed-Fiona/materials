@@ -1,0 +1,37 @@
+
+SHELL        = /bin/sh
+CD           = cd
+CP           = cp
+LN_S         = ln -s -f
+MKDIR        = mkdir -p
+RM           = /bin/rm -f
+TOUCH        = touch
+
+TOPdir       = .
+SRCdir       = $(TOPdir)/src
+INCdir       = $(TOPdir)/src
+BINdir       = $(TOPdir)/bin
+
+MPdir        =
+MPinc        =
+MPlib        =
+
+HPCG_INCLUDES = -I$(INCdir) -I$(INCdir)/$(arch) $(MPinc)
+HPCG_LIBS     =
+
+HPCG_OPTS     = -DHPCG_NO_MPI -DHPCG_CONTIGUOUS_ARRAYS
+
+HPCG_DEFS     = $(HPCG_OPTS) $(HPCG_INCLUDES)
+
+CXX          = clang++
+CXXFLAGS     = $(HPCG_DEFS) -O3 -march=native -mtune=native -mavx2 -mfma \
+               -ffast-math -funroll-loops -fopenmp \
+               -fomit-frame-pointer -flto \
+               -Rpass=loop-vectorize -Rpass-analysis=loop-vectorize
+
+LINKER       = $(CXX)
+LINKFLAGS    = $(CXXFLAGS)
+
+ARCHIVER     = ar
+ARFLAGS      = r
+RANLIB       = echo

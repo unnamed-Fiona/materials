@@ -1,0 +1,32 @@
+  GNU nano 7.2                                                                      Make.Linux_OpenMPI
+SHELL        = /bin/sh
+CD           = cd
+CP           = cp
+LN_S         = ln -s -f
+MKDIR        = mkdir -p
+RM           = /bin/rm -f
+TOUCH        = touch
+
+TOPdir       = .
+SRCdir       = $(TOPdir)/src
+INCdir       = $(TOPdir)/src
+BINdir       = $(TOPdir)/bin
+
+MPdir        = /home/hpc101/spack/opt/spack/linux-icelake/openmpi-5.0.7-z4cmriqgjuoxmttwflenc6socn4fyo6d
+MPinc        = -I$(MPdir)/include
+MPlib        = -L$(MPdir)/lib -Wl,-rpath -Wl,$(MPdir)/lib -lmpi
+
+HPCG_INCLUDES = -I$(INCdir) -I$(INCdir)/$(arch) $(MPinc)
+HPCG_LIBS     = $(MPlib)
+HPCG_OPTS     = -DHPCG_NO_OPENMP
+HPCG_DEFS     = $(HPCG_OPTS) $(HPCG_INCLUDES)
+
+CXX          = mpicxx
+CXXFLAGS     = $(HPCG_DEFS) -O3 -funroll-loops -W -Wall -fomit-frame-pointer
+
+LINKER       = $(CXX)
+LINKFLAGS    = $(CXXFLAGS)
+
+ARCHIVER     = ar
+ARFLAGS      = r
+RANLIB       = echo

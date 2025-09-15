@@ -1,0 +1,8 @@
+
+3041 : 0xbadc270863e18 : 3 : logger_init :  LOG FILE OPENED (by collectunits.logger), level: 4
+3041 : 0xbadc2708828a7 : 4 : pytrace_try_probe_python_functions :  Python version is detected as == 0x0
+3041 : 0xbadc270b71cdf : 4 : pytrace_try_probe_python_functions :  Python version is detected as == 0x0
+3041 : 0xbadc274f6fcd2 : 4 : pytrace_try_probe_python_functions :  Python version is detected as == 0x0
+3041 : 0xbadc27542927a : 4 : pytrace_start_profiling :  [CALLED]
+3041 : 0xbadc275553e3f : 4 : pytrace_stop_profiling :  [CALLED]
+3041 : 0xbadc275556193 : 3 : logger_fini :  LOG FILE CLOSED (by collectunits.logger)
